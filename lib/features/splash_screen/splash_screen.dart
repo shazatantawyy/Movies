@@ -21,13 +21,13 @@ class _SplashScreenState extends State<SplashScreen> {
     super.initState();
 
     Timer(const Duration(seconds: 3),
-        (){
-      Navigator.pushReplacement(context,
-          MaterialPageRoute(
-              builder:
-                  (context)=> const Onboarding1()
-          )
-      );
+            (){
+          Navigator.pushReplacement(context,
+              MaterialPageRoute(
+                  builder:
+                      (context)=> const Onboarding1()
+              )
+          );
         }
     );
   }
@@ -36,7 +36,7 @@ class _SplashScreenState extends State<SplashScreen> {
     return Scaffold(
       backgroundColor: AppColors.black,
       body: Column(
-        mainAxisAlignment: .center,
+        mainAxisAlignment: MainAxisAlignment.center,
         children: [
           Expanded(
             child: Center(
