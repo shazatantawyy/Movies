@@ -1,11 +1,10 @@
 import 'dart:async';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:flutter/material.dart';
-import 'package:google_fonts/google_fonts.dart';
 import 'package:movies/core/app_colors/app_colors.dart';
 import 'package:movies/core/app_images/app_images.dart';
 import 'package:movies/core/app_strings/app_strings.dart';
-import 'package:movies/features/onboarding_screens/onboarding_1.dart';
+import 'package:movies/features/onboarding_screens/onboarding_screen.dart';
 
 class SplashScreen extends StatefulWidget {
   static const String routeName = "splashScreen";
@@ -25,7 +24,7 @@ class _SplashScreenState extends State<SplashScreen> {
           Navigator.pushReplacement(context,
               MaterialPageRoute(
                   builder:
-                      (context)=> const Onboarding1()
+                      (context)=> const OnboardingScreen()
               )
           );
         }

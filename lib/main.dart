@@ -1,12 +1,14 @@
 import 'package:flutter/material.dart';
 import 'package:movies/core/app_theme/app_theme.dart';
-import 'package:movies/features/onboarding_screens/onboarding_1.dart';
-import 'package:movies/features/onboarding_screens/onboarding_2.dart';
-import 'package:movies/features/onboarding_screens/onboarding_3.dart';
-import 'package:movies/features/onboarding_screens/onboarding_4.dart';
+import 'package:movies/features/onboarding_screens/onboarding_screen.dart';
 import 'package:movies/features/splash_screen/splash_screen.dart';
-
-void main() {
+import 'package:movies/firebase_options.dart';
+import 'package:firebase_core/firebase_core.dart';
+void main() async{
+WidgetsFlutterBinding.ensureInitialized();
+await Firebase.initializeApp(
+options: DefaultFirebaseOptions.currentPlatform,
+);
   runApp(const MyApp());
 }
 class MyApp extends StatelessWidget {
@@ -20,12 +22,8 @@ class MyApp extends StatelessWidget {
       theme: AppTheme.darkTheme,
       initialRoute: SplashScreen.routeName,
       routes: {
-        SplashScreen.routeName: (context) => const SplashScreen(),
-        Onboarding1.routeName: (context) => const Onboarding1(),
-        Onboarding2.routeName: (context) => const Onboarding2(),
-        Onboarding3.routeName: (context) => const Onboarding3(),
-        Onboarding4.routeName: (context) => const Onboarding4(),
-      },
+        SplashScreen.routeName:(context) => const OnboardingScreen(),
+      }
     );
   }
 }
