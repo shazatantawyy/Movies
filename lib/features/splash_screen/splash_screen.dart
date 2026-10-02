@@ -21,12 +21,10 @@ class _SplashScreenState extends State<SplashScreen> {
 
     Timer(const Duration(seconds: 3),
             (){
-          Navigator.pushReplacement(context,
-              MaterialPageRoute(
-                  builder:
-                      (context)=> const OnboardingScreen()
-              )
-          );
+              Navigator.pushReplacementNamed(
+                context,
+                OnboardingScreen.routeName,
+              );
         }
     );
   }
@@ -51,7 +49,7 @@ class _SplashScreenState extends State<SplashScreen> {
                   width:180,
                   height: 76,
                 ),
-                SizedBox(height: 4,),
+                const SizedBox(height: 4,),
                 Text(AppStrings.underLogo,style: GoogleFonts.poppins(
                   color: AppColors.white,
                   fontSize: 12,

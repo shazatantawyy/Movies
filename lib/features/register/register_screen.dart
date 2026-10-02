@@ -1,13 +1,14 @@
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:movies/core/app_avatar/app_avatar.dart';
 import 'package:movies/core/app_colors/app_colors.dart';
-import 'package:movies/core/widgets/auth_button.dart';
-import 'package:movies/core/widgets/auth_text_field.dart';
+import 'package:movies/core/storage/user_storage.dart';
+import 'package:movies/core/widgets/services/auth_button.dart';
+import 'package:movies/core/widgets/services/auth_text_field.dart';
 import 'package:movies/features/home/home_screen.dart';
-import 'package:movies/core/app_images/app_images.dart';
 
 class RegisterScreen extends StatefulWidget {
-  static const String routeName = "register";
+  static const String routeName = "Register";
   const RegisterScreen({super.key});
 
   @override
@@ -24,11 +25,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
   int selectedAvatar = 0;
   bool isLoading = false;
 
-  final List<String> avatarImages = [
-    AppImages.bg7,
-    AppImages.bg8,
-    AppImages.bg9,
-  ];
+  final List<String> avatarImages = AppAvatar.avatar.take(3).toList();
 
   @override
   void dispose() {
@@ -67,10 +64,20 @@ class _RegisterScreenState extends State<RegisterScreen> {
 
       await credential.user?.updateDisplayName(nameController.text.trim());
 
+      // New account -> fresh local profile (no leftovers from a previous user).
+      final storage = UserStorage.instance;
+      await storage.clearAll();
+      await storage.updateProfile(
+        name: nameController.text.trim(),
+        phone: phoneController.text.trim(),
+        avatarIndex: selectedAvatar,
+      );
+
       if (!mounted) return;
-      Navigator.pushReplacement(
+      Navigator.pushAndRemoveUntil(
         context,
-        MaterialPageRoute(builder: (context) => HomeScreen()),
+        MaterialPageRoute(builder: (context) => const HomeScreen()),
+            (route) => false,
       );
     } on FirebaseAuthException catch (e) {
       String message = "حدث خطأ، حاولي مرة أخرى";

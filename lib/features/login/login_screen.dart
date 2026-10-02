@@ -1,9 +1,11 @@
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
+import 'package:movies/core/storage/user_storage.dart';
 import 'package:movies/core/app_colors/app_colors.dart';
 import 'package:movies/core/app_images/app_images.dart';
-import 'package:movies/core/widgets/auth_button.dart';
-import 'package:movies/core/widgets/auth_text_field.dart';
-import 'package:movies/core/widgets/language_switch.dart';
+import 'package:movies/core/widgets/services/auth_button.dart';
+import 'package:movies/core/widgets/services/auth_text_field.dart';
+import 'package:movies/core/widgets/services/language_switch.dart';
 import 'package:movies/core/widgets/services/auth_service.dart';
 import 'package:movies/features/forget_password/forget_password_screen.dart';
 import 'package:movies/features/home/home_screen.dart';
@@ -23,6 +25,57 @@ class _LoginScreenState extends State<LoginScreen> {
   final AuthService _authService = AuthService();
 
   bool isEnglish = true;
+  bool isLoading = false;
+
+  void _snack(String message) =>
+      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(message)));
+
+  Future<void> _login() async {
+    final email = emailController.text.trim();
+    final password = passwordController.text;
+
+    if (email.isEmpty || password.isEmpty) {
+      _snack("Please enter your email and password");
+      return;
+    }
+
+    setState(() => isLoading = true);
+    try {
+      final credential = await FirebaseAuth.instance
+          .signInWithEmailAndPassword(email: email, password: password);
+
+      final storage = UserStorage.instance;
+      final displayName = credential.user?.displayName;
+      if (displayName != null && displayName.isNotEmpty) {
+        await storage.updateProfile(
+          name: displayName,
+          phone: storage.phone,
+          avatarIndex: storage.avatarIndex,
+        );
+      }
+
+      if (!mounted) return;
+      Navigator.pushAndRemoveUntil(
+        context,
+        MaterialPageRoute(builder: (_) => const HomeScreen()),
+            (route) => false,
+      );
+    } on FirebaseAuthException catch (e) {
+      var message = "Something went wrong, please try again";
+      if (e.code == 'user-not-found' ||
+          e.code == 'wrong-password' ||
+          e.code == 'invalid-credential') {
+        message = "Wrong email or password";
+      } else if (e.code == 'invalid-email') {
+        message = "Invalid email format";
+      } else if (e.code == 'too-many-requests') {
+        message = "Too many attempts, try again later";
+      }
+      if (mounted) _snack(message);
+    } finally {
+      if (mounted) setState(() => isLoading = false);
+    }
+  }
 
   @override
   void dispose() {
@@ -93,15 +146,8 @@ class _LoginScreenState extends State<LoginScreen> {
               const SizedBox(height: 8),
 
               AuthButton(
-                text: "Login",
-                onPressed: () {
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                      builder: (context) => HomeScreen(),
-                    ),
-                  );
-                },
+                text: isLoading ? "Loading..." : "Login",
+                onPressed: isLoading ? () {} : _login,
               ),
               const SizedBox(height: 16),
 
@@ -164,7 +210,7 @@ class _LoginScreenState extends State<LoginScreen> {
                   if (user != null) {
                     Navigator.pushReplacement(
                       context,
-                      MaterialPageRoute(builder: (context) => HomeScreen()),
+                      MaterialPageRoute(builder: (context) => const HomeScreen()),
                     );
                   } else {
                     ScaffoldMessenger.of(context).showSnackBar(

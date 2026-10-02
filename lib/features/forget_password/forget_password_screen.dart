@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:movies/core/app_colors/app_colors.dart';
-import 'package:movies/core/widgets/auth_button.dart';
-import 'package:movies/core/widgets/auth_text_field.dart';
+import 'package:movies/core/widgets/services/auth_button.dart';
+import 'package:movies/core/widgets/services/auth_text_field.dart';
 import 'package:movies/core/app_images/app_images.dart';
 
 class ForgetPasswordScreen extends StatefulWidget {
