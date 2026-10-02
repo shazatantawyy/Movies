@@ -34,7 +34,12 @@ class ProfileCubit extends Cubit<ProfileState> {
     _storage.addListener(_sync);
   }
 
-  void _sync() => emit(ProfileState.from(_storage));
+  void _sync() {
+    if (!isClosed) emit(ProfileState.from(_storage));
+  }
+
+
+  void refresh() => _sync();
 
   @override
   Future<void> close() {

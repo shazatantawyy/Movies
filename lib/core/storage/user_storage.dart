@@ -8,6 +8,7 @@ class UserStorage extends ChangeNotifier {
 
   static final UserStorage instance = UserStorage._();
 
+  static const String _uidKey = 'uid';
   static const String _nameKey = 'name';
   static const String _phoneKey = 'phone';
   static const String _avatarKey = 'avatar_index';
@@ -20,10 +21,18 @@ class UserStorage extends ChangeNotifier {
     _prefs = await SharedPreferences.getInstance();
   }
 
-
   String get name => _prefs.getString(_nameKey) ?? 'John Safwat';
   String get phone => _prefs.getString(_phoneKey) ?? '';
   int get avatarIndex => _prefs.getInt(_avatarKey) ?? 0;
+
+  Future<void> syncUser(String uid) async {
+    final savedUid = _prefs.getString(_uidKey);
+    if (savedUid != null && savedUid != uid) {
+      await _prefs.clear();
+    }
+    await _prefs.setString(_uidKey, uid);
+    notifyListeners();
+  }
 
   Future<void> updateProfile({
     required String name,
@@ -36,11 +45,11 @@ class UserStorage extends ChangeNotifier {
     notifyListeners();
   }
 
+  /// بتتنده عند الـ Logout
   Future<void> clearAll() async {
     await _prefs.clear();
     notifyListeners();
   }
-
 
   List<Movies> get watchList => _read(_watchListKey);
   List<Movies> get history => _read(_historyKey);
@@ -68,6 +77,7 @@ class UserStorage extends ChangeNotifier {
     await _write(_historyKey, list);
     notifyListeners();
   }
+
   List<Movies> _read(String key) {
     final raw = _prefs.getStringList(key) ?? [];
 

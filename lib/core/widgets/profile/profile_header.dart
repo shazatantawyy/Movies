@@ -1,8 +1,8 @@
-import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import '../../storage/user_storage.dart';
 import '../../../features/login/login_screen.dart';
 import '../../app_colors/app_colors.dart';
+import '../services/auth_service.dart';
 import 'app_button.dart';
 import 'counter_item.dart';
 import '../../../features/edit_profile/edit_profile_screen.dart';
@@ -22,6 +22,20 @@ class ProfileHeader extends StatelessWidget {
   final String avatarPath;
   final int watchListCount;
   final int historyCount;
+
+  Future<void> _logout(BuildContext context) async {
+    final navigator = Navigator.of(context);
+
+
+    await AuthService().signOut();
+
+    await UserStorage.instance.clearAll();
+
+    navigator.pushNamedAndRemoveUntil(
+      LoginScreen.routeName,
+          (route) => false,
+    );
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -65,7 +79,6 @@ class ProfileHeader extends StatelessWidget {
                     ],
                   ),
                 ),
-                const SizedBox(height: 20,),
                 Expanded(
                   child: Row(
                     mainAxisAlignment: MainAxisAlignment.spaceEvenly,
@@ -107,15 +120,7 @@ class ProfileHeader extends StatelessWidget {
                     color: AppColors.red,
                     textColor: AppColors.white,
                     height: 56,
-                    onTap: () async {
-                      final navigator = Navigator.of(context);
-                      await FirebaseAuth.instance.signOut();
-                      await UserStorage.instance.clearAll();
-                      navigator.pushNamedAndRemoveUntil(
-                        LoginScreen.routeName,
-                            (route) => false,
-                      );
-                    },
+                    onTap: () => _logout(context),
                   ),
                 ),
               ],

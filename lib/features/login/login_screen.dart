@@ -26,9 +26,36 @@ class _LoginScreenState extends State<LoginScreen> {
 
   bool isEnglish = true;
   bool isLoading = false;
+  bool isGoogleLoading = false;
 
-  void _snack(String message) =>
-      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(message)));
+  void _snack(String message) => ScaffoldMessenger.of(context)
+      .showSnackBar(SnackBar(content: Text(message)));
+
+
+  Future<void> _saveNameAndGoHome(User? user) async {
+    final storage = UserStorage.instance;
+
+    var name = user?.displayName;
+    if (name == null || name.isEmpty) {
+
+      name = user?.email?.split('@').first;
+    }
+
+    if (name != null && name.isNotEmpty) {
+      await storage.updateProfile(
+        name: name,
+        phone: storage.phone,
+        avatarIndex: storage.avatarIndex,
+      );
+    }
+
+    if (!mounted) return;
+    Navigator.pushAndRemoveUntil(
+      context,
+      MaterialPageRoute(builder: (_) => const HomeScreen()),
+          (route) => false,
+    );
+  }
 
   Future<void> _login() async {
     final email = emailController.text.trim();
@@ -43,23 +70,7 @@ class _LoginScreenState extends State<LoginScreen> {
     try {
       final credential = await FirebaseAuth.instance
           .signInWithEmailAndPassword(email: email, password: password);
-
-      final storage = UserStorage.instance;
-      final displayName = credential.user?.displayName;
-      if (displayName != null && displayName.isNotEmpty) {
-        await storage.updateProfile(
-          name: displayName,
-          phone: storage.phone,
-          avatarIndex: storage.avatarIndex,
-        );
-      }
-
-      if (!mounted) return;
-      Navigator.pushAndRemoveUntil(
-        context,
-        MaterialPageRoute(builder: (_) => const HomeScreen()),
-            (route) => false,
-      );
+      await _saveNameAndGoHome(credential.user);
     } on FirebaseAuthException catch (e) {
       var message = "Something went wrong, please try again";
       if (e.code == 'user-not-found' ||
@@ -74,6 +85,24 @@ class _LoginScreenState extends State<LoginScreen> {
       if (mounted) _snack(message);
     } finally {
       if (mounted) setState(() => isLoading = false);
+    }
+  }
+
+  Future<void> _loginWithGoogle() async {
+    if (isGoogleLoading) return;
+
+    setState(() => isGoogleLoading = true);
+    try {
+      final user = await _authService.signInWithGoogle();
+      if (!mounted) return;
+
+      if (user != null) {
+        await _saveNameAndGoHome(user);
+      } else {
+        _snack("Google sign-in failed");
+      }
+    } finally {
+      if (mounted) setState(() => isGoogleLoading = false);
     }
   }
 
@@ -117,7 +146,6 @@ class _LoginScreenState extends State<LoginScreen> {
                 keyboardType: TextInputType.emailAddress,
               ),
               const SizedBox(height: 10),
-
               AuthTextField(
                 hintText: "Password",
                 prefixIcon: Icons.lock_outline,
@@ -125,7 +153,6 @@ class _LoginScreenState extends State<LoginScreen> {
                 controller: passwordController,
               ),
               const SizedBox(height: 8),
-
               Align(
                 alignment: Alignment.centerRight,
                 child: TextButton(
@@ -144,13 +171,11 @@ class _LoginScreenState extends State<LoginScreen> {
                 ),
               ),
               const SizedBox(height: 8),
-
               AuthButton(
                 text: isLoading ? "Loading..." : "Login",
                 onPressed: isLoading ? () {} : _login,
               ),
               const SizedBox(height: 16),
-
               Row(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
@@ -179,12 +204,12 @@ class _LoginScreenState extends State<LoginScreen> {
                 ],
               ),
               const SizedBox(height: 20),
-
               Row(
                 children: [
                   Expanded(
-                      child: Divider(
-                          color: AppColors.yellow.withValues(alpha: 0.3))),
+                    child: Divider(
+                        color: AppColors.yellow.withValues(alpha: 0.3)),
+                  ),
                   Padding(
                     padding: const EdgeInsets.symmetric(horizontal: 12),
                     child: Text(
@@ -194,33 +219,19 @@ class _LoginScreenState extends State<LoginScreen> {
                     ),
                   ),
                   Expanded(
-                      child: Divider(
-                          color: AppColors.yellow.withValues(alpha: 0.3))),
+                    child: Divider(
+                        color: AppColors.yellow.withValues(alpha: 0.3)),
+                  ),
                 ],
               ),
               const SizedBox(height: 20),
-
               AuthButton(
-                text: "Login With Google",
+                text: isGoogleLoading ? "Loading..." : "Login With Google",
                 backgroundColor: AppColors.yellow,
                 textColor: AppColors.black,
-                onPressed: () async {
-                  final user = await _authService.signInWithGoogle();
-                  if (!context.mounted) return;
-                  if (user != null) {
-                    Navigator.pushReplacement(
-                      context,
-                      MaterialPageRoute(builder: (context) => const HomeScreen()),
-                    );
-                  } else {
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      const SnackBar(content: Text("فشل تسجيل الدخول بجوجل")),
-                    );
-                  }
-                },
+                onPressed: isGoogleLoading ? () {} : _loginWithGoogle,
               ),
               const SizedBox(height: 16),
-
               Center(
                 child: LanguageSwitch(
                   isEnglish: isEnglish,
@@ -228,7 +239,6 @@ class _LoginScreenState extends State<LoginScreen> {
                   arFlag: AppImages.bg12,
                   onChanged: (value) {
                     setState(() => isEnglish = value);
-
                   },
                 ),
               ),

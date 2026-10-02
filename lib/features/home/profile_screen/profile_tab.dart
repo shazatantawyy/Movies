@@ -14,7 +14,7 @@ class ProfileTab extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return BlocProvider(
-      create: (_) => ProfileCubit(UserStorage.instance),
+      create: (_) => ProfileCubit(UserStorage.instance)..refresh(),
       child: DefaultTabController(
         length: 2,
         child: BlocBuilder<ProfileCubit, ProfileState>(

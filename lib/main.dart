@@ -32,7 +32,7 @@ class MyApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return RepositoryProvider(
+    return RepositoryProvider<MoviesRepository>(
       create: (_) => MoviesRepository(ApiManager()),
       child: MaterialApp(
         title: 'Movies',
@@ -57,7 +57,7 @@ class MyApp extends StatelessWidget {
           RegisterScreen.routeName: (context) => const RegisterScreen(),
           HomeScreen.routeName: (context) => const HomeScreen(),
           HomeTab.routeName: (context) => const HomeTab(),
-          MovieDetailsScreen.routeName: (_) => const MovieDetailsScreen(),
+          MovieDetailsScreen.routeName: (context) => const MovieDetailsScreen(),
           SearchTab.routeName: (context) => const SearchTab(),
           ExploreTab.routeName: (context) => const ExploreTab(),
           ProfileTab.routeName: (context) => const ProfileTab(),
